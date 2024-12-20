@@ -1,3 +1,43 @@
+CC = clang
+CPP = clang-cpp
+CXX = clang++
+LD = ld.lld
+CC_LD = ld.lld
+CXX_LD = ld.lld
+AR = llvm-ar
+NM = llvm-nm
+STRIP = llvm-strip
+OBJCOPY = llvm-objcopy
+OBJDUMP = llvm-objdump
+READELF = llvm-readelf
+RANLIB = llvm-ranlib
+HOSTCC = clang
+HOSTCXX = clang++
+HOSTAR = llvm-ar
+HOSTLD = ld.lld
+
+CPPFLAGS = -march=native -mtune=native -pipe
+CFLAGS = ${CPPFLAGS} -O3 -flto -pthread -fPIC -g0
+CXXFLAGS = ${CFLAGS}
+LDFLAGS = -fuse-ld=lld -fPIC -flto -O3 -pipe -pthread
+RUSTFLAGS = -C link-dead-code=off -C opt-level=3 -C target-cpu=native -C codegen-units=4 -C linker-plugin-lto -C panic=abort -C lto -C debuginfo=1
+
+KCPPFLAGS = ${CPPFLAGS}
+KCFLAGS = ${CFLAGS}
+KCXXFLAGS = ${CXXFLAGS}
+KLDFLAGS = ${LDFLAGS}
+KRUSTFLAGS = ${RUSTFLAGS}
+
+KBUILD_CPPFLAGS = ${CPPFLAGS}
+KBUILD_CFLAGS = ${CFLAGS}
+KBUILD_CXXFLAGS = ${CXXFLAGS}
+KBUILD_LDFLAGS = ${LDFLAGS}
+KBUILD_RUSTFLAGS = ${RUSTFLAGS}
+
+KBUILD_USERHOSTCFLAGS = ${CFLAGS}
+KBUILD_USERCFLAGS  = ${CFLAGS}
+KBUILD_USERLDFLAGS = ${LDFLAGS}
+
 # SPDX-License-Identifier: GPL-2.0
 VERSION = 6
 PATCHLEVEL = 13
@@ -452,19 +492,8 @@ else ifneq ($(filter -%,$(LLVM)),)
 LLVM_SUFFIX := $(LLVM)
 endif
 
-HOSTCC	= $(LLVM_PREFIX)clang$(LLVM_SUFFIX)
-HOSTCXX	= $(LLVM_PREFIX)clang++$(LLVM_SUFFIX)
-else
-HOSTCC	= gcc
-HOSTCXX	= g++
-endif
 HOSTRUSTC = rustc
 HOSTPKG_CONFIG	= pkg-config
-
-KBUILD_USERHOSTCFLAGS := -Wall -Wmissing-prototypes -Wstrict-prototypes \
-			 -O2 -fomit-frame-pointer -std=gnu11
-KBUILD_USERCFLAGS  := $(KBUILD_USERHOSTCFLAGS) $(USERCFLAGS)
-KBUILD_USERLDFLAGS := $(USERLDFLAGS)
 
 # These flags apply to all Rust code in the tree, including the kernel and
 # host programs.
