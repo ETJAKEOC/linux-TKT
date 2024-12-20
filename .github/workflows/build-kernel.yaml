@@ -1,0 +1,54 @@
+name: Build and Package Kernel
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [arch, fedora, debian]
+        version: [6.1, 6.6, 6.11, 6.12, 6.13-rc]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set Up Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential flex bison bc libelf-dev libssl-dev
+        if [[ "${{ matrix.os }}" == "arch" ]]; then
+          sudo pacman -Syu --noconfirm base-devel
+        elif [[ "${{ matrix.os }}" == "fedora" ]]; then
+          sudo dnf install -y @development-tools elfutils-libelf-devel openssl-devel
+        fi
+
+    - name: Apply Patches
+      run: ./apply_patches.sh ${{ matrix.version }}
+
+    - name: Build Kernel
+      run: |
+        if [[ "${{ matrix.os }}" == "arch" ]]; then
+          makepkg -s
+        elif [[ "${{ matrix.os }}" == "fedora" ]]; then
+          rpmbuild --define "_topdir $(pwd)" -ba kernel.spec
+        elif [[ "${{ matrix.os }}" == "debian" ]]; then
+          make -j$(nproc)
+          fakeroot make-kpkg --initrd --revision=1.0 custom-kernel
+        fi
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: "${{ matrix.os }}-kernel-${{ matrix.version }}"
+        path: |
+          *.pkg.tar.zst
+          *.rpm
+          *.deb
