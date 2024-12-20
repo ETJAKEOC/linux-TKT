@@ -38,7 +38,6 @@
 *.mod.c
 *.o
 *.o.*
-*.patch
 *.rmeta
 *.rpm
 *.rsi
@@ -119,13 +118,6 @@ modules.order
 /include/config/
 /include/generated/
 /arch/*/include/generated/
-
-# stgit generated dirs
-patches-*
-
-# quilt's files
-patches
-series
 
 # ctags files
 tags
